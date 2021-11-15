@@ -11,8 +11,6 @@ app.get('/:userid/favorites/temp/', (req, res) => {
     dbs.getTemp(req.params.userid, function(result, err){
         if(err) return res.status(500).json(JSON.parse('{"status": "407", "message": "' + err + '"}'))
 
-        console.log(err)
-
         var response = '{\n' +
             '\t"status": "200",\n' +
             '\t"data": [{\n' +

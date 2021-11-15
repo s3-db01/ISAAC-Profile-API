@@ -12,8 +12,10 @@ connection.connect()
 module.exports = {
     setTemp: function(userid, temp, callback){
         try{
-            connection.query('INSERT INTO preferences (userid, preftemp) VALUES ('+userid+', '+temp+') ON DUPLICATE KEY update preftemp = '+temp+'', function(err){
+            connection.query(`INSERT INTO preferences (userid, preftemp) VALUES ("${userid}", ${temp}) ON DUPLICATE KEY update preftemp = ${temp}`, function(err){
                 if(err) return callback(err)
+
+                return callback(null)
             })
         }catch(err){
             return callback(null, err)
@@ -23,7 +25,7 @@ module.exports = {
 
     getTemp: function (userid, callback){
         try{
-            connection.query('select preftemp from preferences where userid like '+userid+'', function (err, rows) {
+            connection.query(`select preftemp from preferences where userid like "${userid}"`, function (err, rows) {
                 if (err) return callback(null, err)
                 if (rows.length < 1) return callback(null, "userid not found")
 
