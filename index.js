@@ -2,10 +2,11 @@ const express = require('express')
 const app = express()
 const port = 3000
 
+var cors = require('cors')
 const dbs = require('./dbs')
 
 
-
+app.use(cors())
 app.get('/:userid/favorites/temp/', (req, res) => {
     dbs.getTemp(req.params.userid, function(result, err){
         if(err) return res.status(500).json(JSON.parse('{"status": "407", "message": "' + err + '"}'))
