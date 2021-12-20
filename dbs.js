@@ -50,7 +50,7 @@ module.exports = {
         }catch(err){
             return callback(null, err)
         }
-    }
+    },
 
     checkKey: function (key, callback){
         try{
