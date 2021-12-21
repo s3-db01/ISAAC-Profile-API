@@ -1,0 +1,81 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Upload docker-image on successfully passing tests on main
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+# Test application to see if there are bugs
+  test-application:   
+    runs-on: ubuntu-latest
+    env: 
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_ALLOW_EMPTY_PASSWORD: 1
+        DB_DATABASE: ${{ secrets.DB_DATABASE }}
+        DB_DIALECT: mysql
+        DB_DATABASE_TEST: ${{ secrets.DB_DATABASE_TEST }}
+        
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm install
+    - run: npm run build --if-present
+    - run: docker-compose up 
+    - name: Sleep for 120 seconds
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '120s'
+    - run: npm test
+    
+  # Upload docker-image after all tests are done
+  upload-docker-image:
+    needs: [test-application]
+    runs-on: ubuntu-latest
+    steps:
+
+        - name: Check Out Repo 
+          uses: actions/checkout@v2
+
+        - name: Login to Docker Hub
+          uses: docker/login-action@v1
+          with:
+            username: ${{ secrets.DOCKER_USER }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+
+        - name: Set up Docker Buildx
+          id: buildx
+          uses: docker/setup-buildx-action@v1
+
+        - name: Build and push
+          id: docker_build
+          uses: docker/build-push-action@v2
+          with:
+            context: ./
+            file: ./Dockerfile
+            push: true
+            tags: stijnschellekens/profile-api:latest
+
+        - name: Image digest
+          run: echo ${{ steps.docker_build.outputs.digest }}
