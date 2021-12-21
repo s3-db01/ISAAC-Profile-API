@@ -18,7 +18,6 @@ jobs:
     env: 
         DB_HOST: ${{ secrets.DB_HOST }}
         DB_USER: ${{ secrets.DB_USER }}
-        DB_ALLOW_EMPTY_PASSWORD: 1
         DB_DATABASE: ${{ secrets.DB_DATABASE }}
         DB_DIALECT: mysql
         DB_DATABASE_TEST: ${{ secrets.DB_DATABASE_TEST }}
